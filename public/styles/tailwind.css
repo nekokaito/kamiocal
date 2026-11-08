@@ -6,3 +6,56 @@ body {
   font-family: "Segoe UI", "Segoe UI Web (West European)", -apple-system,
     BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
 }
+
+@layer components {
+  .login-page {
+    @apply grid min-h-dvh place-items-center bg-app-bg p-6 text-neutral-100;
+    color-scheme: dark;
+  }
+
+  .login-card {
+    @apply w-full max-w-[400px] rounded-xl border border-app-raised bg-app-surface p-6 min-[480px]:p-8;
+  }
+
+  .login-icon {
+    @apply mb-6 flex size-12 items-center justify-center rounded-[10px] bg-app-raised;
+  }
+  .login-icon svg {
+    @apply size-6;
+  }
+
+  .login-title {
+    @apply mb-2 text-2xl font-bold;
+  }
+
+  .login-description {
+    @apply mb-7 text-sm leading-[1.6] text-gray-400;
+  }
+
+  .login-label {
+    @apply mb-2.5 block text-sm font-medium;
+  }
+
+  .login-input {
+    @apply w-full rounded-lg border border-app-border bg-app-bg px-3.5 py-[13px] text-sm text-neutral-100
+           placeholder:text-gray-500
+           focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-gray-400;
+  }
+  .login-input[aria-invalid="true"] {
+    @apply border-red-400;
+  }
+
+  .login-error {
+    @apply mt-3 text-[13px] text-red-400;
+  }
+
+  .login-button {
+    @apply mt-5 w-full rounded-lg border border-app-border bg-app-raised px-4 py-[13px] text-sm font-semibold text-neutral-100
+           transition-colors hover:bg-app-border
+           focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-gray-300;
+  }
+
+  .login-footer {
+    @apply mt-6 text-center text-xs text-gray-500;
+  }
+}

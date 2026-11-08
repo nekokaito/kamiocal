@@ -6,70 +6,79 @@ import { join } from "path";
 import { readDirectory } from "./directoryListing";
 import { publicAssetCache, serveFile, sharedFileCache } from "./fileResponse";
 import { resolveRequestPath } from "./requestPath";
+import { createAuth } from "./auth";
 
 export interface AppOptions {
-    sharedDir: string;
-    publicDir?: string;
-    viewsDir?: string;
+  sharedDir: string;
+  publicDir?: string;
+  viewsDir?: string;
+  password?: string;
 }
 
 export const createApp = ({
-    sharedDir,
-    publicDir = join(__dirname, "public"),
-    viewsDir = join(__dirname, "views"),
+  sharedDir,
+  publicDir = join(__dirname, "public"),
+  viewsDir = join(__dirname, "views"),
+  password,
 }: AppOptions) => {
-    const app = new Hono();
-    const indexView = join(viewsDir, "index.ejs");
-    let renderIndex: ejs.TemplateFunction | undefined;
+  const app = new Hono();
+  const indexView = join(viewsDir, "index.ejs");
+  let renderIndex: ejs.TemplateFunction | undefined;
 
-    const renderDirectory = (filePath: string, requestPath: string) => {
-        if (!renderIndex) {
-            renderIndex = ejs.compile(readFileSync(indexView, "utf8"), { filename: indexView, cache: false });
-        }
+  const renderDirectory = (filePath: string, requestPath: string) => {
+    if (!renderIndex) {
+      renderIndex = ejs.compile(readFileSync(indexView, "utf8"), {
+        filename: indexView,
+        cache: false,
+      });
+    }
 
-        return renderIndex({ data: readDirectory(filePath, requestPath) });
-    };
+    return renderIndex({ data: readDirectory(filePath, requestPath) });
+  };
 
-    const publicAssetHandler = (c: Context) => {
-        const resolvedPath = resolveRequestPath(publicDir, c.req.path);
+  const publicAssetHandler = (c: Context) => {
+    const resolvedPath = resolveRequestPath(publicDir, c.req.path);
 
-        if (!resolvedPath) return c.text("Not found", 404);
+    if (!resolvedPath) return c.text("Not found", 404);
 
-        try {
-            const stats = statSync(resolvedPath.filePath);
+    try {
+      const stats = statSync(resolvedPath.filePath);
 
-            if (!stats.isFile()) return c.text("Not found", 404);
+      if (!stats.isFile()) return c.text("Not found", 404);
 
-            return serveFile(c, resolvedPath.filePath, stats, publicAssetCache);
-        } catch {
-            return c.text("Not found", 404);
-        }
-    };
+      return serveFile(c, resolvedPath.filePath, stats, publicAssetCache);
+    } catch {
+      return c.text("Not found", 404);
+    }
+  };
 
-    const sharedPathHandler = (c: Context) => {
-        const resolvedPath = resolveRequestPath(sharedDir, c.req.path);
+  const sharedPathHandler = (c: Context) => {
+    const resolvedPath = resolveRequestPath(sharedDir, c.req.path);
 
-        if (!resolvedPath) return c.text("Not found", 404);
+    if (!resolvedPath) return c.text("Not found", 404);
 
-        try {
-            const stats = statSync(resolvedPath.filePath);
+    try {
+      const stats = statSync(resolvedPath.filePath);
 
-            if (stats.isFile()) return serveFile(c, resolvedPath.filePath, stats, sharedFileCache);
-            if (!stats.isDirectory()) return c.text("Not found", 404);
+      if (stats.isFile())
+        return serveFile(c, resolvedPath.filePath, stats, sharedFileCache);
+      if (!stats.isDirectory()) return c.text("Not found", 404);
 
-            c.header("Cache-Control", "no-store");
-            return c.html(renderDirectory(resolvedPath.filePath, resolvedPath.requestPath));
-        } catch {
-            return c.text("Not found", 404);
-        }
-    };
+      c.header("Cache-Control", "no-store");
+      return c.html(
+        renderDirectory(resolvedPath.filePath, resolvedPath.requestPath),
+      );
+    } catch {
+      return c.text("Not found", 404);
+    }
+  };
 
-    app.get("/styles/*", publicAssetHandler);
-    app.on("HEAD", "/styles/*", publicAssetHandler);
-    app.get("/icons/*", publicAssetHandler);
-    app.on("HEAD", "/icons/*", publicAssetHandler);
-    app.get("*", sharedPathHandler);
-    app.on("HEAD", "*", sharedPathHandler);
+  app.get("/styles/*", publicAssetHandler);
+  app.on("HEAD", "/styles/*", publicAssetHandler);
+  app.get("/icons/*", publicAssetHandler);
+  app.on("HEAD", "/icons/*", publicAssetHandler);
+  app.get("*", sharedPathHandler);
+  app.on("HEAD", "*", sharedPathHandler);
 
-    return app;
+  return app;
 };
