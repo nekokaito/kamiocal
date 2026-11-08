@@ -517,6 +517,16 @@ video {
   width: 2rem;
   height: 2rem;
 }
+
+.size-4 {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+.size-icon {
+  width: 65px;
+  height: 20px;
+}
+
 .h-\[200px\] {
   height: 200px;
 }
@@ -798,6 +808,13 @@ body {
   color: #6b7280;
   font-size: 12px;
   text-align: center;
+}
+
+.btn-flex {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 
 /* Responsive */
