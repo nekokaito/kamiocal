@@ -36,7 +36,7 @@ export function askHidden(question: string): Promise<string> {
 }
 
 export async function promptPassword(): Promise<string> {
-  const password = await askHidden("Enter password: ");
+  const password = await askHidden("Set password: ");
   if (!password.trim()) throw new Error("Password cannot be empty.");
 
   const confirmation = await askHidden("Confirm password: ");
